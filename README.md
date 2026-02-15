@@ -34,7 +34,7 @@ visionforall/
 
 ### 1) Clone and enter repo
 ```bash
-git clone <YOUR_REPO_URL>
+git clone https://github.com/Mohanrajx/VisionForAll
 cd VisionForAll
 ```
 
