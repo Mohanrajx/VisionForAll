@@ -1,29 +1,69 @@
 # VisionForAll
 
-VisionForAll is an open-source **Edge-AI accessibility assistant** for visually impaired users and low-connectivity environments. It runs locally, is privacy-first by default, and supports pluggable modules for vision, speech, and local knowledge retrieval.
+VisionForAll is an open-source, offline-first **Edge-AI Accessibility Assistant** built for visually impaired users and low-connectivity environments. It runs locally and is designed to be privacy-safe by default.
 
-## Features (MVP)
-- Offline-first Typer-based CLI assistant with secure defaults.
-- Commands:
-  - `visionforall run`
-  - `visionforall describe`
-  - `visionforall read-text`
-  - `visionforall ingest-kb path/to/docs`
-  - `visionforall ask "question"`
-- Plugin interfaces for `VisionPlugin`, `STTPlugin`, `TTSPlugin`, and `KBPlugin`.
-- Moondream wrapper + mock vision plugin for CI.
-- Local RAG plugin that uses **LangChain + Chroma** when installed, with a safe offline heuristic fallback when not.
-- Config via environment variables + optional `.toml`, `.yaml`, or `.json` file.
+---
 
-## Quickstart
+## What you get
+- Local-first CLI assistant (Typer-based command UX).
+- Vision workflows: scene description + text-reading.
+- Voice pipeline (STT/TTS plugins with graceful fallback behavior).
+- Knowledge-base Q&A with local retrieval (LangChain + Chroma when installed, heuristic fallback otherwise).
+- Modular plugin architecture so you can swap vision/STT/TTS/KB components.
+- Secure-by-default config (no cloud calls, no telemetry by default).
+
+---
+
+## Project structure
+```text
+visionforall/
+  visionforall/
+    main.py
+    config.py
+    core/
+    plugins/
+    data/sample_kb/
+  scripts/
+  tests/
+  .github/workflows/
+```
+
+---
+
+## Step-by-step installation
+
+### 1) Clone and enter repo
 ```bash
-python -m venv .venv
+git clone <YOUR_REPO_URL>
+cd VisionForAll
+```
+
+### 2) Create virtual environment
+
+**Linux/macOS**
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
+```
+
+**Windows (PowerShell)**
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 3) Install package
+```bash
 pip install -e .
+```
+
+### 4) Verify installation
+```bash
 visionforall --help
 ```
 
-Install feature extras:
+### 5) (Optional) Install capability extras
+Install only what you need:
 ```bash
 pip install -e .[vision]
 pip install -e .[stt]
@@ -32,23 +72,52 @@ pip install -e .[rag]
 pip install -e .[yaml]
 ```
 
-## Architecture
-```text
-[Camera Sensor] -> [Vision Plugin] -> [Pipeline] -> [Console + TTS Output]
-                                \-> [KB Plugin (LangChain+Chroma or fallback)]
-[STT Plugin] ----> [Assistant Intent Router] ----/
+Or install multiple extras at once:
+```bash
+pip install -e .[vision,stt,tts,rag,yaml]
 ```
 
-## Offline mode and privacy
-- No cloud calls by default.
-- No telemetry by default.
-- No sensitive audio is persisted by default.
-- Local KB index persists under `.vectorstore/`.
+---
 
-## Config
-Environment variables are prefixed with `VFA_`.
+## Step-by-step usage
 
-Optional config file examples:
+### A. Quick smoke flow
+1. Show CLI commands:
+   ```bash
+   visionforall --help
+   ```
+2. Describe a scene:
+   ```bash
+   visionforall describe
+   ```
+3. Read text from camera frame:
+   ```bash
+   visionforall read-text
+   ```
+
+### B. Ingest local knowledge and ask questions
+1. Ingest docs (markdown/txt):
+   ```bash
+   visionforall ingest-kb visionforall/visionforall/data/sample_kb
+   ```
+2. Ask a question:
+   ```bash
+   visionforall ask "Where are emergency exits usually marked?"
+   ```
+
+### C. Run assistant loop
+```bash
+visionforall run
+```
+Then follow prompt instructions (`Enter` to interact, `q` to quit).
+
+---
+
+## Configuration (env + config files)
+
+You can configure runtime via environment variables (`VFA_*`) and optional config files (`.toml`, `.yaml`, `.yml`, `.json`).
+
+### Example `config.toml`
 ```toml
 log_level = "INFO"
 mode = "push_to_talk"
@@ -61,17 +130,50 @@ enable_cloud_providers = false
 telemetry_enabled = false
 ```
 
-Use with commands:
+Use it:
 ```bash
 visionforall ask "Where are exits?" --config config.toml
 ```
 
-## Knowledge base workflow
-```bash
-visionforall ingest-kb visionforall/visionforall/data/sample_kb
-visionforall ask "Where are emergency exits usually marked?"
+---
+
+## Super UI (local web UI plan)
+
+VisionForAll is currently **CLI-first** for reliability and accessibility in constrained environments.
+
+### Current UI status
+- ✅ Production path: terminal/CLI.
+- 🔜 “Super UI” local web interface: planned roadmap item (dashboard + large controls + audio state + KB chat panel).
+
+### Proposed Super UI feature set
+- High-contrast accessibility theme and keyboard-only navigation.
+- One-click actions: Describe, Read Text, Ask KB, Start/Stop listening.
+- Live transcript + response panel.
+- Privacy indicators (network/cloud disabled badges).
+- Local-only mode indicator and model/plugin health checks.
+
+> If you want, a next PR can scaffold `/ui` with a minimal local dashboard (no cloud dependency), keeping CLI as primary backend.
+
+---
+
+## Architecture
+```text
+[Camera Sensor] -> [Vision Plugin] -> [Pipeline] -> [Console + TTS Output]
+                                \-> [KB Plugin (LangChain+Chroma or fallback)]
+[STT Plugin] ----> [Assistant Intent Router] ----/
 ```
 
+---
+
+## Privacy & security defaults
+- No cloud calls by default.
+- No telemetry by default.
+- No sensitive audio persisted by default.
+- Local KB index under `.vectorstore/`.
+
+See also: `SECURITY.md` and `CONTRIBUTING.md`.
+
+---
 
 ## Publish quick path
 1. Run checks:
@@ -83,21 +185,21 @@ visionforall ask "Where are emergency exits usually marked?"
 2. Push branch and open PR.
 3. Use `RELEASE_CHECKLIST.md` for full release/publish steps.
 
+---
+
 ## Hardware notes (Raspberry Pi optional)
 - Raspberry Pi 4+ can run CLI and fallback plugins.
-- Use smaller local models for low-RAM devices.
+- Use lighter local models for low-RAM setups.
 
-## Security baseline
-- Apache-2.0 license.
-- Lint/tests in CI.
-- Security policy in `SECURITY.md`.
-- Contribution guidance in `CONTRIBUTING.md`.
+---
 
 ## Roadmap
 - Better wake-word implementation.
 - Better multilingual model packs.
 - Haptic output plugins.
-- Local web UI and mobile companion.
+- Local web “Super UI” and mobile companion.
+
+---
 
 ## License
 Apache-2.0. See `LICENSE`.
