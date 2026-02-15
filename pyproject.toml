@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "visionforall"
+version = "0.2.0"
+description = "Open-source Edge-AI accessibility assistant with offline-first plugins."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "VisionForAll Contributors" }]
+keywords = ["accessibility", "edge-ai", "offline", "vision", "rag"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+]
+dependencies = ["typer>=0.12.3"]
+
+[project.optional-dependencies]
+yaml = ["PyYAML>=6.0.1"]
+vision = ["opencv-python>=4.10.0.84"]
+stt = ["faster-whisper>=1.0.3"]
+tts = ["piper-tts>=1.2.0", "pyttsx3>=2.98"]
+rag = [
+  "langchain>=0.2.14",
+  "langchain-community>=0.2.12",
+  "chromadb>=0.5.5",
+  "sentence-transformers>=3.0.1",
+  "pypdf>=4.3.1",
+]
+dev = ["pytest>=8.3.2", "ruff>=0.6.3", "pre-commit>=3.8.0"]
+
+[project.scripts]
+visionforall = "visionforall.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "visionforall"}
+
+[tool.setuptools.packages.find]
+where = ["visionforall"]
+include = ["visionforall*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
